@@ -23,11 +23,11 @@ ds = ray.data.from_items([
 
 # Minimal vLLM configuration
 config = vLLMEngineProcessorConfig(
-    model_source="unsloth/Llama-3.1-8B-Instruct",
+    model_source="HuggingFaceTB/SmolLM2-135M-Instruct",
     concurrency=1,  # 1 vLLM engine replica
     batch_size=32,  # 32 samples per batch
     engine_kwargs={
-        "max_model_len": 4096, # Fit into test GPU memory
+        "max_model_len": 512, # Fit into test GPU memory
     }
 )
 

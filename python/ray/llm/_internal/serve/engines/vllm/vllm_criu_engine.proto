@@ -1,0 +1,223 @@
+syntax = "proto3";
+
+package vllm_engine;
+
+// Main VLLMEngine service
+service VLLMEngineService {
+  // Lifecycle methods
+  rpc Initialize(InitializeRequest) returns (InitializeResponse);
+  rpc Start(StartRequest) returns (StartResponse);
+  rpc CheckHealth(HealthRequest) returns (HealthResponse);
+  
+  // Generation methods
+  rpc Chat(ChatRequest) returns (stream ChatResponse);
+  rpc Completions(CompletionsRequest) returns (stream CompletionsResponse);
+  rpc Embeddings(EmbeddingsRequest) returns (EmbeddingsResponse);
+  rpc Transcriptions(TranscriptionsRequest) returns (stream TranscriptionsResponse);
+  rpc Score(ScoreRequest) returns (ScoreResponse);
+  
+  // Tokenization methods
+  rpc Tokenize(TokenizeRequest) returns (TokenizeResponse);
+  rpc Detokenize(DetokenizeRequest) returns (DetokenizeResponse);
+  
+  // Cache management
+  rpc ResetPrefixCache(ResetPrefixCacheRequest) returns (ResetPrefixCacheResponse);
+  
+  // Power management
+  rpc Sleep(SleepRequest) returns (SleepResponse);
+  rpc Wakeup(WakeupRequest) returns (WakeupResponse);
+  rpc IsSleeping(IsSleepingRequest) returns (IsSleepingResponse);
+  rpc Pause(PauseRequest) returns (PauseResponse);
+  rpc Resume(ResumeRequest) returns (ResumeResponse);
+  rpc IsPaused(IsPausedRequest) returns (IsPausedResponse);
+  
+  // Profiling
+  rpc StartProfile(StartProfileRequest) returns (StartProfileResponse);
+  rpc StopProfile(StopProfileRequest) returns (StopProfileResponse);
+  
+  // LoRA management
+  rpc ResolveLora(ResolveLoraRequest) returns (ResolveLoraResponse);
+  
+  // Collective RPC
+  rpc CollectiveRpc(CollectiveRpcRequest) returns (CollectiveRpcResponse);
+}
+
+// Common messages
+message Empty {}
+
+message RawRequestInfo {
+  string request_id = 1;
+  map<string, string> headers = 2;
+  string client_ip = 3;
+}
+
+// Initialize - new method to pass llm_config
+message InitializeRequest {
+  string llm_config_json = 1;  // JSON-serialized LLMConfig
+}
+
+message InitializeResponse {
+  bool success = 1;
+  optional string error_message = 2;
+}
+
+// Start/Lifecycle
+message StartRequest {}
+message StartResponse {}
+
+message HealthRequest {}
+message HealthResponse {}
+
+// Chat completion
+message ChatRequest {
+  string json_request = 1;  // JSON-serialized ChatCompletionRequest
+  optional RawRequestInfo raw_request_info = 2;
+}
+
+message ChatResponse {
+  oneof response {
+    string stream_chunk = 1;  // For streaming responses
+    string final_response = 2;  // JSON-serialized ChatCompletionResponse
+    string error = 3;  // JSON-serialized ErrorResponse
+  }
+}
+
+// Completions
+message CompletionsRequest {
+  string json_request = 1;  // JSON-serialized CompletionRequest
+  optional RawRequestInfo raw_request_info = 2;
+}
+
+message CompletionsResponse {
+  oneof response {
+    string stream_chunk = 1;
+    string final_response = 2;  // JSON-serialized CompletionResponse
+    string error = 3;
+  }
+}
+
+// Embeddings
+message EmbeddingsRequest {
+  string json_request = 1;  // JSON-serialized EmbeddingRequest
+  optional RawRequestInfo raw_request_info = 2;
+}
+
+message EmbeddingsResponse {
+  oneof response {
+    string final_response = 1;  // JSON-serialized EmbeddingResponse
+    string error = 2;
+  }
+}
+
+// Transcriptions
+message TranscriptionsRequest {
+  bytes audio_data = 1;
+  string json_request = 2;  // JSON-serialized TranscriptionRequest (without file)
+  optional RawRequestInfo raw_request_info = 3;
+}
+
+message TranscriptionsResponse {
+  oneof response {
+    string stream_chunk = 1;
+    string final_response = 2;  // JSON-serialized TranscriptionResponse
+    string error = 3;
+  }
+}
+
+// Score
+message ScoreRequest {
+  string json_request = 1;  // JSON-serialized ScoreRequest
+  optional RawRequestInfo raw_request_info = 2;
+}
+
+message ScoreResponse {
+  oneof response {
+    string final_response = 1;  // JSON-serialized ScoreResponse
+    string error = 2;
+  }
+}
+
+// Tokenization
+message TokenizeRequest {
+  string json_request = 1;  // JSON-serialized TokenizeRequest
+  optional RawRequestInfo raw_request_info = 2;
+}
+
+message TokenizeResponse {
+  oneof response {
+    string final_response = 1;  // JSON-serialized TokenizeResponse
+    string error = 2;
+  }
+}
+
+message DetokenizeRequest {
+  string json_request = 1;  // JSON-serialized DetokenizeRequest
+  optional RawRequestInfo raw_request_info = 2;
+}
+
+message DetokenizeResponse {
+  oneof response {
+    string final_response = 1;  // JSON-serialized DetokenizeResponse
+    string error = 2;
+  }
+}
+
+// Cache management
+message ResetPrefixCacheRequest {}
+message ResetPrefixCacheResponse {}
+
+// Power management
+message SleepRequest {
+  int32 level = 1;  // Sleep level (1 or 2)
+}
+message SleepResponse {}
+
+message WakeupRequest {
+  repeated string tags = 1;  // Optional tags
+}
+message WakeupResponse {}
+
+message IsSleepingRequest {}
+message IsSleepingResponse {
+  bool is_sleeping = 1;
+}
+
+message PauseRequest {
+  bool wait_for_inflight_requests = 1;
+  bool clear_cache = 2;
+}
+message PauseResponse {}
+
+message ResumeRequest {}
+message ResumeResponse {}
+
+message IsPausedRequest {}
+message IsPausedResponse {
+  bool is_paused = 1;
+}
+
+// Profiling
+message StartProfileRequest {}
+message StartProfileResponse {}
+
+message StopProfileRequest {}
+message StopProfileResponse {}
+
+// LoRA
+message ResolveLoraRequest {
+  string model_id = 1;
+  string local_path = 2;
+}
+message ResolveLoraResponse {}
+
+// Collective RPC
+message CollectiveRpcRequest {
+  string method = 1;
+  optional float timeout = 2;
+  repeated bytes args = 3;  // Pickled arguments
+  bytes kwargs = 4;  // Pickled kwargs dict
+}
+
+message CollectiveRpcResponse {
+  repeated bytes results = 1;  // Pickled results from each worker
+}
