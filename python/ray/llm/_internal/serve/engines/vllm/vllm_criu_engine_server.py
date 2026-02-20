@@ -26,7 +26,7 @@ from ray.llm._internal.serve.engines.vllm.vllm_engine import VLLMEngine
 from ray.llm._internal.serve.observability.logging import get_logger
 
 # Import generated gRPC code
-from ray.llm._internal.serve.engines.vllm.generated import (
+from ray.llm._internal.serve.engines.vllm import (
     vllm_criu_engine_pb2 as pb2,
     vllm_criu_engine_pb2_grpc as pb2_grpc,
 )

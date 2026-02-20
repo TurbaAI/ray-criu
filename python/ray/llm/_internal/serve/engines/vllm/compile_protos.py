@@ -21,7 +21,8 @@ def compile_protos():
     
     # Define paths
     proto_file = script_dir / "vllm_criu_engine.proto"
-    generated_dir = script_dir / "generated"
+    # generated_dir = script_dir / "generated"
+    generated_dir = script_dir
     
     # Ensure the proto file exists
     if not proto_file.exists():
